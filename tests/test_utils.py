@@ -2,7 +2,22 @@ import typing
 
 import pytest
 
-from pynecone import utils
+from pynecone import constants, utils
+from pynecone.event import EventHandler, window_alert
+
+
+@pytest.fixture
+def event_handler1() -> EventHandler:
+    """A sample test event handler.
+
+    Returns:
+        A sample test event handler function.
+    """
+
+    def test_fn():
+        pass
+
+    return EventHandler(fn=test_fn)
 
 
 @pytest.mark.parametrize(
@@ -261,3 +276,56 @@ def test_setup_frontend(tmp_path, mocker):
 )
 def test_is_backend_variable(input, output):
     assert utils.is_backend_variable(input) == output
+
+
+def test_get_event(list_mutation_state):
+    """Test get the event from the given state.
+
+    Args:
+        list_mutation_state: The state.
+    """
+    event = constants.HYDRATE
+    ret = utils.get_event(list_mutation_state, event)
+    assert ret == f"{list_mutation_state.get_name()}.{event}"
+
+
+def test_get_hydrate_event(list_mutation_state):
+    """Test get the name of the hydrate event for the state.
+
+    Args:
+        list_mutation_state: The state.
+    """
+    ret = utils.get_hydrate_event(list_mutation_state)
+    assert ret == f"{list_mutation_state.get_name()}.{constants.HYDRATE}"
+
+
+def test_format_event_handler(event_handler1):
+    ret = utils.format_event_handler(event_handler1)
+    assert ret == event_handler1.fn.__qualname__
+
+    def test_fn():
+        pass
+
+    handler = EventHandler(fn=test_fn)
+    ret = utils.format_event_handler(handler)
+    print(handler)
+
+def test_fix_events(event_handler1):
+    """Test fix a list of events returned by an event handler.
+
+    Args:
+        event_handler1: The test event handler
+    """
+    events = utils.fix_events(None, "")
+    assert events == []
+
+    token = "event.token"
+    payload = "An error occurred. See logs for details."
+    events = utils.fix_events(window_alert(payload), token)  # type: ignore
+    assert len(events) == 1
+    assert events[0].token == token
+    assert events[0].payload["message"] == payload
+
+    events = utils.fix_events([event_handler1], token)
+    assert len(events) == 1
+    assert events[0].token == token

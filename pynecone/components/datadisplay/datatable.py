@@ -37,6 +37,18 @@ class DataTable(Gridjs):
     # Enable pagination.
     pagination: Var[bool]
 
+    # To set the width of the table
+    width: Var[str]
+
+    # To set the height of the table.
+    height: Var[str]
+
+    # To calculate the width of each column automatically
+    auto_width: Var[bool]
+
+    # Fixes the header to the top of the table
+    fixed_header: Var[bool]
+
     @classmethod
     def get_alias(cls) -> Optional[str]:
         """Get the alias for the component.
